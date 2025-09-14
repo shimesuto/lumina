@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina - Phox brainrot for your server</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Quicksand:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: #0a0615;
+            color: #e8e3f5;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Starfield */
+        .cosmos {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: radial-gradient(ellipse at top, #0f0820 0%, #0a0615 40%, #050309 100%);
+        }
+
+        .star {
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        .star.tiny {
+            width: 1px;
+            height: 1px;
+            background: white;
+            animation: twinkle-subtle 4s ease-in-out infinite;
+        }
+
+        .star.small {
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            box-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        .star.medium {
+            width: 3px;
+            height: 3px;
+            background: radial-gradient(circle, #ffffff 0%, rgba(200, 200, 255, 0.8) 100%);
+            box-shadow: 0 0 6px rgba(180, 180, 255, 0.6);
+            animation: pulse-glow 4s ease-in-out infinite;
+        }
+
+        .star.large {
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, #fff 0%, rgba(150, 150, 255, 0.9) 100%);
+            box-shadow: 0 0 12px rgba(150, 150, 255, 0.8), 0 0 24px rgba(100, 100, 255, 0.4);
+            animation: pulse-bright 3s ease-in-out infinite;
+        }
+
+        .star.colored {
+            width: 3px;
+            height: 3px;
+            animation: color-shift 6s ease-in-out infinite;
+        }
+
+        @keyframes twinkle-subtle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            25% { opacity: 0.3; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.2); }
+            75% { opacity: 0.6; transform: scale(1.05); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.7; transform: scale(1); filter: blur(0px); }
+            50% { opacity: 1; transform: scale(1.3); filter: blur(0.5px); }
+        }
+
+        @keyframes pulse-bright {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            30% { opacity: 0.4; transform: scale(0.8); }
+            60% { opacity: 1; transform: scale(1.4); }
+        }
+
+        @keyframes color-shift {
+            0%, 100% { 
+                background: radial-gradient(circle, #ffd4a3 0%, rgba(255, 200, 150, 0.6) 100%);
+                box-shadow: 0 0 8px rgba(255, 200, 150, 0.6);
+            }
+            33% { 
+                background: radial-gradient(circle, #a3d4ff 0%, rgba(150, 200, 255, 0.6) 100%);
+                box-shadow: 0 0 8px rgba(150, 200, 255, 0.6);
+            }
+            66% { 
+                background: radial-gradient(circle, #ffa3d4 0%, rgba(255, 150, 200, 0.6) 100%);
+                box-shadow: 0 0 8px rgba(255, 150, 200, 0.6);
+            }
+        }
+
+        /* Shooting star styles (disabled) 
+        .shooting-star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: linear-gradient(90deg, white, rgba(255,255,255,0.8));
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(255,255,255,0.9);
+            transform: rotate(-30deg);
+            animation: shoot 2s linear forwards;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .shooting-star::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -140px;
+            width: 140px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), rgba(255,255,255,0.9));
+            border-radius: 1px;
+            transform: translateY(-50%);
+        }
+
+        @keyframes shoot {
+            0% {
+                transform: translateX(0) translateY(0) rotate(-30deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(120vw) translateY(80vh) rotate(-30deg);
+                opacity: 0;
+            }
+        } */
+
+        /* Dynamic Constellations */
+        .constellation-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .constellation-canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Nebula effects */
+        .nebula {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.15;
+            animation: nebula-drift 60s ease-in-out infinite;
+        }
+
+        .nebula.purple {
+            width: 400px;
+            height: 300px;
+            background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
+        }
+
+        .nebula.blue {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+        }
+
+        .nebula.pink {
+            width: 300px;
+            height: 400px;
+            background: radial-gradient(circle, #ec4899 0%, transparent 70%);
+        }
+
+        @keyframes nebula-drift {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -20px) scale(1.1); }
+            66% { transform: translate(-20px, 30px) scale(0.9); }
+        }
+
+        /* Header styling */
+        header {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 4rem 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(3.5rem, 10vw, 7rem);
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #e0aaff 0%, #c77dff 25%, #9d4edd 50%, #7209b7 75%, #e0aaff 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            animation: gradient-shift 4s ease infinite;
+            text-shadow: 0 0 40px rgba(157, 78, 221, 0.3);
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% center; }
+            50% { background-position: 100% center; }
+        }
+
+        .subtitle {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+            font-weight: 300;
+            color: #c77dff;
+            letter-spacing: 0.05em;
+        }
+
+        .mystical-symbol {
+            font-size: 2rem;
+            color: #7209b7;
+            margin: 1rem 0;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .intro-text {
+            max-width: 650px;
+            margin: 2rem auto 3rem;
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+            line-height: 1.8;
+            opacity: 0.95;
+            font-weight: 400;
+            color: #d4c5f9;
+        }
+
+        /* invite button */
+        .invite-button {
+            display: inline-block;
+            position: relative;
+            padding: 1.2rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 500;
+            text-decoration: none;
+            color: white;
+            background: linear-gradient(135deg, #7209b7, #560bad);
+            border-radius: 50px;
+            transition: all 0.4s ease;
+            box-shadow: 0 6px 25px rgba(114, 9, 183, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            letter-spacing: 0.05em;
+        }
+
+        .invite-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .invite-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 35px rgba(114, 9, 183, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .invite-button:hover::before {
+            left: 100%;
+        }
+
+        /* Content sections */
+        .content-section {
+            position: relative;
+            z-index: 10;
+            padding: 5rem 2rem;
+            background: linear-gradient(180deg, transparent 0%, rgba(114, 9, 183, 0.02) 50%, transparent 100%);
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            margin-bottom: 1rem;
+            font-weight: 400;
+            background: linear-gradient(90deg, #c77dff, #9d4edd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.1em;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #a78bfa;
+            margin-bottom: 3rem;
+            font-weight: 300;
+            font-style: italic;
+        }
+
+        /* Feature cards */
+        .features-grid {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .feature-card {
+            background: rgba(114, 9, 183, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 20px;
+            border: 1px solid rgba(199, 125, 255, 0.2);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(199, 125, 255, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px) rotateX(5deg);
+            border-color: rgba(199, 125, 255, 0.4);
+            box-shadow: 0 20px 40px rgba(114, 9, 183, 0.2);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #e0aaff;
+            font-weight: 500;
+        }
+
+        .feature-card p {
+            opacity: 0.9;
+            line-height: 1.7;
+            color: #d4c5f9;
+        }
+
+        /* uhh */
+        .personality-grid {
+            max-width: 900px;
+            margin: 4rem auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .personality-trait {
+            padding: 1.5rem;
+            background: rgba(157, 78, 221, 0.08);
+            border-radius: 15px;
+            border: 1px solid rgba(224, 170, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .personality-trait:hover {
+            transform: scale(1.05);
+            background: rgba(157, 78, 221, 0.12);
+        }
+
+        .trait-emoji {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+            animation: bounce-subtle 2s ease-in-out infinite;
+        }
+
+        .personality-trait:nth-child(2) .trait-emoji {
+            animation-delay: 0.2s;
+        }
+
+        .personality-trait:nth-child(3) .trait-emoji {
+            animation-delay: 0.4s;
+        }
+
+        .personality-trait:nth-child(4) .trait-emoji {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .trait-title {
+            font-size: 1.1rem;
+            color: #c77dff;
+            font-weight: 500;
+        }
+
+        /* Stats with glow */
+        .stats-grid {
+            max-width: 700px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .stat-item {
+            padding: 2rem 1.5rem;
+            background: radial-gradient(circle at center, rgba(157, 78, 221, 0.1) 0%, rgba(114, 9, 183, 0.05) 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(199, 125, 255, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #7209b7, #c77dff, #7209b7);
+            border-radius: 20px;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-item:hover::after {
+            opacity: 0.3;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 300;
+            background: linear-gradient(135deg, #e0aaff, #9d4edd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            font-family: 'Cinzel', serif;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+            font-size: 1rem;
+            color: #c77dff;
+        }
+
+        /* Footer */
+        footer {
+            position: relative;
+            z-index: 10;
+            background: linear-gradient(180deg, transparent 0%, rgba(114, 9, 183, 0.05) 100%);
+            padding: 4rem 2rem 2rem;
+            text-align: center;
+            border-top: 1px solid rgba(199, 125, 255, 0.2);
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer-quote {
+            font-size: 1.3rem;
+            font-style: italic;
+            color: #c77dff;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .footer-links {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #e0aaff;
+            text-decoration: none;
+            padding: 0.7rem 1.5rem;
+            border: 1px solid rgba(224, 170, 255, 0.3);
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: 400;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer-links a::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(224, 170, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+        }
+
+        .footer-links a:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+
+        .footer-links a:hover {
+            border-color: rgba(224, 170, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .footer-text {
+            opacity: 0.7;
+            font-size: 0.95rem;
+            max-width: 500px;
+            margin: 2rem auto 0;
+            line-height: 1.6;
+            color: #d4c5f9;
+        }
+
+        .footer-text .heart {
+            color: #ec4899;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Scroll animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .personality-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            header {
+                padding: 3rem 1.5rem;
+            }
+
+            h1 {
+                font-size: 3rem;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading animation */
+        .loading-stars {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            z-index: 1000;
+        }
+
+        .loading-stars.active {
+            display: block;
+        }
+
+        .loading-star {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #c77dff;
+            border-radius: 50%;
+            margin: 0 5px;
+            animation: loading-bounce 1.4s ease-in-out infinite both;
+        }
+
+        .loading-star:nth-child(1) { animation-delay: -0.32s; }
+        .loading-star:nth-child(2) { animation-delay: -0.16s; }
+        .loading-star:nth-child(3) { animation-delay: 0; }
+
+        @keyframes loading-bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Cosmos background -->
+    <div class="cosmos" id="cosmos">
+        <div class="constellation-container">
+            <canvas class="constellation-canvas" id="constellationCanvas"></canvas>
+        </div>
+        <!-- Nebula effects -->
+        <div class="nebula purple" style="top: 10%; left: 60%;"></div>
+        <div class="nebula blue" style="top: 50%; left: 10%;"></div>
+        <div class="nebula pink" style="top: 70%; right: 15%;"></div>
+    </div>
+
+    <!-- Loading animation -->
+    <div class="loading-stars" id="loader">
+        <span class="loading-star"></span>
+        <span class="loading-star"></span>
+        <span class="loading-star"></span>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <h1>Lumina</h1>
+        <p class="subtitle">Phox brainrot for your server :3</p>
+        <div class="mystical-symbol">✦ ✧ ✦</div>
+        <p class="intro-text">
+           Hi! I'm Lumina, a delphox that can add some kyus and cuddles to your server! 
+        </p>
+        <a href="#" class="invite-button" onclick="inviteBot()">invite me?</a>
+    </header>
+
+    
+    <!-- Features -->
+    <section class="content-section">
+        <h2 class="section-title fade-in">features</h2>
+        <p class="section-subtitle fade-in">she does more than just kyu :o</p>
+        
+        <div class="features-grid">
+            <div class="feature-card fade-in">
+ 
+                <h3>mood</h3>
+                <p>share your feelings with ~mood and watch her respond, depending on her mood too!</p>
+            </div>
+            
+            <div class="feature-card fade-in">
+        
+                <h3>interactivity</h3>
+                <p>pet, nuzzle, and brush her fluffy tail. She keeps score and definitely has favorites. Warning: may ask for more attention.</p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <h3>fortune telling</h3>
+                <p>daily insights from her magic (Accuracy not guaranteed, entertainment probably is tho)</p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <h3>personal stats</h3>
+                <p>track your friendship level, pet count, and much more! see if you've earned the coveted "Favorite Human" status.</p>
+            </div>
+            
+            <div class="feature-card fade-in">
+
+                <h3>persistent memory</h3>
+                <p>she remembers everything: your favorite colors, that time you forgot to pet her, and stores it all in public leaderboards.</p>
+            </div>
+            
+            <div class="feature-card fade-in">
+
+                <h3>plenty of other silly things</h3>
+                <p>gondal travels. he seeks REVENGE.</p>
+            </div>
+        </div>
+    </section>
+
+  
+
+    <!-- Stats -->
+    <section class="content-section">
+        <h2 class="section-title fade-in">stats</h2>
+        <p class="section-subtitle fade-in">numbers that probably matter</p>
+        
+        <div class="stats-grid fade-in">
+            <div class="stat-item">
+                <div class="stat-number">like 15</div>
+                <div class="stat-label">commands</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">uptime*</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">∞</div>
+                <div class="stat-label">kyus</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">goober</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+  <div class="footer-content">
+    <p class="footer-quote fade-in" id="footerQuote"></p>
+  </div>
+
+<script>
+  // List of quotes
+  const footerquotes = [
+    "i'm like hey wassup hello",
+    "kyu kyu kyu kyu kyu kyu kyu",
+    "man this background is ugly on mobile... Symest is too lazy to fix it though (same with me, sometimes)",
+    "come on... just add me already!",
+    "yes, you can call me mommy"
+  ];
+
+  // Select the footer quote element
+  const footerQuoteElement = document.getElementById('footerQuote');
+
+  // Choose a random quote
+  const randomIndex = Math.floor(Math.random() * footerquotes.length);
+  const selectedQuote = footerquotes[randomIndex];
+
+  // Set the quote in the footer
+  footerQuoteElement.textContent = `"${selectedQuote}"`;
+</script>
+            
+            <div class="footer-links fade-in">
+                <a href="https://discord.gg/dzxgsgm95e" target="_blank" rel="noopener">Symest's server</a>
+                <a href="https://www.youtube.com/watch?v=63tLPzoBGIs&list=RD63tLPzoBGIs&start_radio=1" target="_blank" rel="noopener">Docs</a>
+                <a href="#" onclick="showSecret()">Secret</a>
+            </div>
+            
+            <div class="footer-text fade-in">
+                <p>Created with <span class="heart">♥</span> and concerning amounts of dialogue trees by Symest</p>
+                <p style="font-size: 0.85rem; opacity: 0.6; margin-top: 1rem;">
+                    *Uptime not guaranteed during nap times, which occur frequently and without warning
+                </p>
+            </div>
+    </footer>
+
+   <script>
+    
+  
+    // --- Starfield ---
+    function createStarfield() {
+        const cosmos = document.getElementById('cosmos');
+        const numStars = Math.min(600, Math.floor((window.innerWidth * window.innerHeight) / 8000));
+        // avoid creating stars multiple times on reload
+        if (cosmos.dataset.starsCreated === '1') return;
+        cosmos.dataset.starsCreated = '1';
+
+        for (let i = 0; i < numStars; i++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+
+            const type = Math.random();
+            if (type < 0.4) star.classList.add('tiny');
+            else if (type < 0.7) star.classList.add('small');
+            else if (type < 0.85) star.classList.add('medium');
+            else if (type < 0.95) star.classList.add('large');
+            else star.classList.add('colored');
+
+            star.style.top = Math.random() * 100 + '%';
+            star.style.left = Math.random() * 100 + '%';
+
+            cosmos.appendChild(star);
+        }
+    }
+
+    // --- Shooting stars ---
+    function spawnShootingStar() {
+        const cosmos = document.getElementById('cosmos');
+        const shootingStar = document.createElement('div');
+        shootingStar.classList.add('shooting-star');
+        shootingStar.style.top = (10 + Math.random() * 50) + 'vh';
+        shootingStar.style.left = '-10vw';
+        cosmos.appendChild(shootingStar);
+
+        // remove after animation finishes
+        setTimeout(() => shootingStar.remove(), 2500);
+    }
+    // spawn occasionally
+    setInterval(() => {
+        if (Math.random() < 0.45) spawnShootingStar();
+    }, 4500 + Math.random() * 3000);
+
+    // --- Constellations ---
+    function drawConstellations() {
+        const canvas = document.getElementById('constellationCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        const stars = [];
+        for (let i = 0; i < 40; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: 1 + Math.random() * 2
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+
+            stars.forEach(s => {
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.strokeStyle = 'rgba(199,125,255,0.25)';
+            ctx.lineWidth = 0.5;
+
+            for (let i = 0; i < stars.length; i++) {
+                for (let j = i + 1; j < stars.length; j++) {
+                    const dx = stars[i].x - stars[j].x;
+                    const dy = stars[i].y - stars[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(stars[i].x, stars[i].y);
+                        ctx.lineTo(stars[j].x, stars[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    }
+
+    // --- Fade-in on scroll ---
+    function handleScrollAnimations() {
+        const elements = document.querySelectorAll('.fade-in');
+        const triggerBottom = window.innerHeight * 0.9;
+
+        elements.forEach(el => {
+            const boxTop = el.getBoundingClientRect().top;
+            if (boxTop < triggerBottom) {
+                el.classList.add('visible');
+            }
+        });
+    }
+    window.addEventListener('scroll', handleScrollAnimations);
+    window.addEventListener('load', handleScrollAnimations);
+
+    // --- Invite button ---
+    function inviteBot() {
+        window.open("https://discord.com/oauth2/authorize?client_id=1416260214130348194&scope=bot+applications.commands&permissions=8", "_blank");
+    }
+
+    // --- Secret easter egg ---
+    function showSecret() {
+        alert("you found my secret button. use '~claim YRb38cIaL0' to get a special badge! Don't tell anyone... hehe~");
+    }
+
+    // --- Init ---
+    window.addEventListener('load', () => {
+        createStarfield();
+        drawConstellations();
+
+        const loader = document.getElementById('loader');
+        loader.classList.remove('active');
+    });
+    
+</script>
